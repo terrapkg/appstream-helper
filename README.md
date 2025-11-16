@@ -90,7 +90,9 @@ This will use the minimal component as a base and merge the RPM-generated metada
     <launchable type="desktop-id">my.custom.package.id.desktop</launchable>
     ...
 </component>
+```
 
+## How it works
 terra-appstream-helper does a 1-3 way merge from:
 1. The base file provided with `-o` (if any)
 2. The RPM-generated metadata from the macros in the specfile
