@@ -1,17 +1,17 @@
 [project]
 name = "terra-appstream-helper"
-version = "0.1.0"
-description = "Add your description here"
+version = "0.1.1"
+description = "A helper tool for managing AppStream metadata for Terra applications."
 readme = "README.md"
 authors = [
     { name = "Cappy Ishihara", email = "cappy@cappuchino.xyz" }
 ]
-requires-python = ">=3.13"
+
 dependencies = []
 
 [project.scripts]
 terra-appstream-helper = "terra_appstream_helper:main"
 
 [build-system]
-requires = ["uv_build>=0.9.7,<0.10.0"]
-build-backend = "uv_build"
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
