@@ -152,7 +152,10 @@ def stage2_metainfo() -> ET.Element:
     
     # template components
     
-    
+    # Implicitly set metadata license to CC0-1.0
+    metadata_license_elem = ET.SubElement(template_element, "metadata_license")
+    metadata_license_elem.text = "CC0-1.0"
+        
     if component_type:
         template_element.set("type", component_type)
 
@@ -177,17 +180,18 @@ def stage2_metainfo() -> ET.Element:
         summary_elem = ET.SubElement(template_element, "summary")
         summary_elem.text = summary
         
-    # Implicitly set metadata license to CC0-1.0
-    metadata_license_elem = ET.SubElement(template_element, "metadata_license")
-    metadata_license_elem.text = "CC0-1.0"
-    
+
     if description:
         #<p>description</p>
         description_elem = ET.SubElement(template_element, "description")
         p_elem = ET.SubElement(description_elem, "p")
         p_elem.text = description
-    
-    
+    elif summary:
+        # Fallback: use summary as description
+        description_elem = ET.SubElement(template_element, "description")
+        p_elem = ET.SubElement(description_elem, "p")
+        p_elem.text = summary
+        
     if developer_name:
         developer_elem = ET.SubElement(template_element, "developer")
         if developer_org_name:
