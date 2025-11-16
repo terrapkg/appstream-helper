@@ -37,9 +37,11 @@
     -- todo: Probably make another macro for this lmfao
     appid = posix.getenv("APPSTREAM_APPID")
     table.insert(args, " --output " .. appid .. ".metainfo.xml")
-    table.insert(args, "&&" .. " install -Dm644 " .. appid .. ".metainfo.xml " .. rpm.expand("%{buildroot}%{_metainfodir}/" .. appid .. ".metainfo.xml"))
+
     local final = table.concat(args, " ")
     
-    -- finally print that oneliner
-    print(final)
+    -- finally print that
+    print(final .. "\\n")
+    -- and then this
+    print("install -Dm644 " .. appid .. ".metainfo.xml " .. rpm.expand("%{buildroot}%{_metainfodir}/" .. appid .. ".metainfo.xml"))
 }
