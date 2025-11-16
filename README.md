@@ -55,3 +55,14 @@ Source1: com.example.my-package.metainfo.xml
 This will use the provided metainfo file as a base and merge
 all other changes into it if found.
 
+### Supported macros
+
+The following RPM macros are supported to customize the AppStream metadata:
+
+- `appid`: The AppStream ID for the package (e.g., `com.example.my-package`).
+- `developer`: The name of the upstream developer or organization.
+- `org`: The organization domain of the upstream developer (e.g., `org.example`).
+- `license`: The license of the package (e.g., `MIT`, `GPL-3.0-or-later`). Should already be filled in by the `License:` preamble
+- `url`: The URL of the package's homepage. Should already be filled in by the `URL:` preamble
+- `appstream_component`: The component type of the package (e.g., `desktop-application`, `console-application`, `runtime`, etc.).
+- `description`: A short description of the package.
