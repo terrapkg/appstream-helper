@@ -20,6 +20,7 @@
     macro_setenvar("appstream_component", "APPSTREAM_COMPONENT_TYPE")
     macro_setenvar("developer", "APPSTREAM_DEVELOPER")
     macro_setenvar("org", "APPSTREAM_DEVELOPER_ORG_NAME")
+    macro_setenvar("name_pretty", "APPSTREAM_NAME_PRETTY")
 
     local override_file = rpm.expand('%{-o*}')
     if override_file == "" then

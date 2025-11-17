@@ -53,6 +53,7 @@ args = parser.parse_args()
 # - APPSTREAM_COMPONENT_TYPE - the AppStream component type (e.g., "desktop-application", "library", etc.)
 # - APPSTREAM_DEVELOPER_NAME - the name of the developer or maintainer
 # - APPSTREAM_DEVELOPER_ORG_NAME - the name of the developer organization
+# - APPSTREAM_NAME_PRETTY - a human-friendly name for the application
 
 buildroot = os.getenv("RPM_BUILD_ROOT")
 if buildroot is None:
@@ -159,6 +160,9 @@ def stage2_metainfo() -> ET.Element:
     developer_name = os.getenv("APPSTREAM_DEVELOPER_NAME")
     developer_org_name = os.getenv("APPSTREAM_DEVELOPER_ORG_NAME")
     component_type = os.getenv("APPSTREAM_COMPONENT_TYPE")
+    pkgname = os.getenv("RPM_PACKAGE_NAME")
+    name_pretty = os.getenv("APPSTREAM_NAME_PRETTY")
+    # pkgversion = os.getenv("RPM_PACKAGE_VERSION")
     
     # template components
     
@@ -168,10 +172,19 @@ def stage2_metainfo() -> ET.Element:
         
     if component_type:
         template_element.set("type", component_type)
+        
+    if name_pretty:
+        name_elem = ET.SubElement(template_element, "name")
+        name_elem.text = name_pretty
 
     if app_id:
         id_elem = ET.SubElement(template_element, "id")
-        id_elem.text = app_id
+        if pkgname and pkgname.endswith("-nightly"):
+            id_elem.text = f"{app_id}-nightly"
+        elif pkgname and pkgname.endswith("-git"):
+            id_elem.text = f"{app_id}-git"
+        else:
+            id_elem.text = app_id
     else:
         # error out since we do need an app id
         raise EnvironmentError("APPSTREAM_APPID environment variable is not set.")

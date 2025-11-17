@@ -105,6 +105,7 @@ The merge order is that the topmost source will take precedence over the lower s
 The following RPM macros are supported to customize the AppStream metadata:
 
 - `appid`: The AppStream ID for the package (e.g., `com.example.my-package`). Required for all packages that use this macro.
+- `name_pretty`: A human-friendly name for the package. If not provided, the `Name:` preamble will be used.
 - `developer`: The name of the upstream developer or organization.
 - `org`: The organization domain of the upstream developer (e.g., `org.example`).
 - `license`: The license of the package (e.g., `MIT`, `GPL-3.0-or-later`). Should already be filled in by the `License:` preamble
