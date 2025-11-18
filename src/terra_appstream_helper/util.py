@@ -53,8 +53,11 @@ def stage2_metainfo() -> ET.Element:
     if name_pretty:
         name_elem = ET.SubElement(template_element, "name")
         name_elem.text = name_pretty
+    else:
+        name_elem = ET.SubElement(template_element, "name")
+        name_elem.text = pkgname
         
-    icon_elem = get_icon_from_type(component_type if component_type else "")
+    icon_elem = get_icon_from_type(component_type if component_type else "console-application")
     if icon_elem is not None:
         template_element.append(icon_elem)
 
@@ -79,6 +82,12 @@ def stage2_metainfo() -> ET.Element:
         # type="homepage"
         url_elem.set("type", "homepage")
         url_elem.text = url
+        
+        if url.endswith(".git") or "github.com" in url or "gitlab.com" in url:
+            vcs_elem = ET.SubElement(template_element, "url")
+            vcs_elem.set("type", "vcs-browser")
+            vcs_elem.text = url
+            
 
     if summary:
         summary_elem = ET.SubElement(template_element, "summary")
