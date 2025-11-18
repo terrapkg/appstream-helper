@@ -1,6 +1,6 @@
 [project]
 name = "terra-appstream-helper"
-version = "0.1.5"
+version = "0.1.6"
 description = "A helper tool for managing AppStream metadata for Terra applications."
 readme = "README.md"
 authors = [
