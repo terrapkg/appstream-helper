@@ -4,10 +4,15 @@ import os
 import xml.etree.ElementTree as ET
 from typing import Optional
 
+from .logging import get_logger
 
-def get_icon_from_type(component_type: str) -> Optional[ET.Element]:
-    
+logger = get_logger()
+
+
+def get_icon_from_type(component_type: Optional[str]) -> Optional[ET.Element]:
+    """Return a stock icon element when a known component type is supplied."""
     icon_type_map = {
+        "desktop-application": "application-x-executable",
         "runtime": "application-x-executable",
         "console-application": "terminal",
         "addon": "package",
@@ -17,12 +22,22 @@ def get_icon_from_type(component_type: str) -> Optional[ET.Element]:
         "repository": "folder",
     }
 
-    if component_type in icon_type_map:
-        icon_elem = ET.Element("icon")
-        icon_elem.set("type", "stock")
-        icon_elem.text = icon_type_map[component_type]
-        return icon_elem
-    return None
+    if component_type is None:
+        logger.warning("No component type provided; skipping default icon injection.")
+        return None
+
+    icon_name = icon_type_map.get(component_type)
+    if icon_name is None:
+        logger.warning(
+            "No default icon mapping for component type '%s'; skipping default icon injection.",
+            component_type,
+        )
+        return None
+
+    icon_elem = ET.Element("icon")
+    icon_elem.set("type", "stock")
+    icon_elem.text = icon_name
+    return icon_elem
 
 
 def stage2_metainfo() -> ET.Element:
@@ -56,11 +71,6 @@ def stage2_metainfo() -> ET.Element:
     else:
         name_elem = ET.SubElement(template_element, "name")
         name_elem.text = pkgname
-        
-    icon_elem = get_icon_from_type(component_type if component_type else "console-application")
-    if icon_elem is not None:
-        template_element.append(icon_elem)
-
     if app_id:
         id_elem = ET.SubElement(template_element, "id")
         if pkgname and pkgname.endswith("-nightly"):
@@ -82,12 +92,11 @@ def stage2_metainfo() -> ET.Element:
         # type="homepage"
         url_elem.set("type", "homepage")
         url_elem.text = url
-        
+
         if url.endswith(".git") or "github.com" in url or "gitlab.com" in url:
             vcs_elem = ET.SubElement(template_element, "url")
             vcs_elem.set("type", "vcs-browser")
             vcs_elem.text = url
-            
 
     if summary:
         summary_elem = ET.SubElement(template_element, "summary")

@@ -18,7 +18,8 @@ import xml.etree.ElementTree as ET
 from pathlib import Path
 from typing import Optional
 
-from .util import stage2_metainfo
+from .logging import get_logger
+from .util import get_icon_from_type, stage2_metainfo
 from .xmlutil import load_xml_document, merge_xml
 
 parser = argparse.ArgumentParser(
@@ -59,6 +60,8 @@ buildroot = os.getenv("RPM_BUILD_ROOT")
 if buildroot is None:
     raise EnvironmentError("RPM_BUILD_ROOT environment variable is not set.")
 
+logger = get_logger()
+
 
 def append_element(
     xml_root: ET.Element, element_name: str, subelement: ET.Element
@@ -84,6 +87,13 @@ def prep_component(buildroot: str, xml_root: Optional[ET.Element] = None) -> Non
     if xml_root is None:
         raise ValueError("xml_root must be provided to scan_installed_files.")
 
+    # Only apply default icon when no icon is defined in the merged XML.
+    if xml_root.find("icon") is None:
+        component_type = xml_root.get("type") or os.getenv("APPSTREAM_COMPONENT_TYPE")
+        icon_elem = get_icon_from_type(component_type)
+        if icon_elem is not None:
+            xml_root.append(icon_elem)
+
     pkgname = os.getenv("RPM_PACKAGE_NAME", "")
     rpm_version = os.getenv("RPM_PACKAGE_VERSION", "unknown")
 
@@ -103,26 +113,52 @@ def prep_component(buildroot: str, xml_root: Optional[ET.Element] = None) -> Non
 
     for suffix, release_suffix in release_suffixes.items():
         if pkgname.endswith(suffix):
-            # print in GitHub Actions log format
-            print(
-                f"notice::::Detected package name '{pkgname}' ends with '{suffix}', adjusting AppStream IDs accordingly."
-            )
+            adjusted = False
             pkgid_elem = xml_root.find("./id")
             if pkgid_elem is not None and pkgid_elem.text is not None:
                 base_app_id = pkgid_elem.text
-                if not base_app_id.endswith(release_suffix[0]):
+                if not base_app_id.lower().endswith(release_suffix[0].lower()):
                     pkgid_elem.text = f"{base_app_id}{release_suffix[0]}"
+                    adjusted = True
             name_elem = xml_root.find("./name")
             if name_elem is not None and name_elem.text is not None:
                 base_name = name_elem.text
-                if not base_name.endswith(release_suffix[1]):
+                normalized_base = base_name.lower()
+                raw_suffix = release_suffix[1]
+                stripped_suffix = raw_suffix.strip().lower()
+                suffix_variants = {raw_suffix.lower()}
+                if stripped_suffix:
+                    suffix_variants.add(stripped_suffix)
+                    if stripped_suffix.startswith("(") and stripped_suffix.endswith(
+                        ")"
+                    ):
+                        inner_suffix = stripped_suffix[1:-1].strip()
+                        if inner_suffix:
+                            suffix_variants.add(inner_suffix)
+                            suffix_variants.add(f" {inner_suffix}")
+                if not any(
+                    normalized_base.endswith(variant) for variant in suffix_variants
+                ):
                     name_elem.text = f"{base_name}{release_suffix[1]}"
+                    adjusted = True
+            if adjusted:
+                logger.info(
+                    "Detected package name '%s' ends with '%s'; adjusted AppStream IDs accordingly.",
+                    pkgname,
+                    suffix,
+                )
+            else:
+                logger.debug(
+                    "Package name '%s' ends with '%s'; AppStream IDs already contain suffix, no changes made.",
+                    pkgname,
+                    suffix,
+                )
             # adjust release version
 
     for dirpath, _, filenames in os.walk(buildroot):
         for filename in filenames:
             path = os.path.join(dirpath, filename)
-            print(f"Found installed file: {path}")
+            logger.debug("Found installed file: %s", path)
             if filename.endswith(".so") or ".so." in filename:
                 append_provides_element(xml_root, "library", filename)
             elif os.access(path, os.X_OK):
