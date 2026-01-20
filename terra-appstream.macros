@@ -14,8 +14,22 @@
 
     macro_setenvar("appid", "APPSTREAM_APPID")
     macro_setenvar("license", "APPSTREAM_LICENSE")
-    macro_setenvar("summary", "APPSTREAM_SUMMARY")
-    macro_setenvar("description", "APPSTREAM_DESCRIPTION")
+    -- Try appstream_summary first (explicit), fall back to summary
+    local summary_value = rpm.expand('%{?appstream_summary}')
+    if summary_value == "" then
+        summary_value = rpm.expand('%{?summary}')
+    end
+    if summary_value ~= "" then
+        posix.setenv("APPSTREAM_SUMMARY", summary_value)
+    end
+    -- Try appstream_description first (explicit), fall back to description
+    local description_value = rpm.expand('%{?appstream_description}')
+    if description_value == "" then
+        description_value = rpm.expand('%{?description}')
+    end
+    if description_value ~= "" then
+        posix.setenv("APPSTREAM_DESCRIPTION", description_value)
+    end
     macro_setenvar("url", "APPSTREAM_URL")
     macro_setenvar("appstream_component", "APPSTREAM_COMPONENT_TYPE")
     macro_setenvar("developer", "APPSTREAM_DEVELOPER")

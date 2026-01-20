@@ -163,7 +163,7 @@ def prep_component(buildroot: str, xml_root: Optional[ET.Element] = None) -> Non
                 append_provides_element(xml_root, "library", filename)
             if filename.endswith(".dll") or filename.endswith(".lib"):
                 append_provides_element(xml_root, "library", filename)
-            elif os.access(path, os.X_OK): 
+            elif os.access(path, os.X_OK) and "usr/bin" in path:
                 append_provides_element(xml_root, "binary", filename)
             elif "usr/share/applications" in path and filename.endswith(".desktop"):
                 existing_launchable = next(
@@ -241,7 +241,9 @@ def main(argv: Optional[list[str]] = None) -> None:
             )
         override_root = load_xml_document(override_path)
 
-    existing_path = find_existing_metainfo(buildroot)  # pyright: ignore[reportArgumentType]
+    existing_path = find_existing_metainfo(
+        buildroot
+    )  # pyright: ignore[reportArgumentType]
     existing_root: Optional[ET.Element] = (
         load_xml_document(existing_path) if existing_path is not None else None
     )
