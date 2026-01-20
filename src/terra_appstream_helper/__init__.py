@@ -159,9 +159,13 @@ def prep_component(buildroot: str, xml_root: Optional[ET.Element] = None) -> Non
         for filename in filenames:
             path = os.path.join(dirpath, filename)
             logger.debug("Found installed file: %s", path)
-            if filename.endswith(".so") or ".so." in filename:
+            if (filename.endswith(".so") or ".so." in filename) and (
+                "usr/lib" in path or "usr/lib64" in path
+            ):
                 append_provides_element(xml_root, "library", filename)
-            if filename.endswith(".dll") or filename.endswith(".lib"):
+            if (filename.endswith(".dll") or filename.endswith(".lib")) and (
+                "usr/lib" in path or "usr/lib64" in path
+            ):
                 append_provides_element(xml_root, "library", filename)
             elif os.access(path, os.X_OK) and "usr/bin" in path:
                 append_provides_element(xml_root, "binary", filename)
